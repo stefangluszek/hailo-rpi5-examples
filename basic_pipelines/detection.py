@@ -78,9 +78,17 @@ def app_callback(pad, info, user_data):
         label = detection.get_label()
         bbox = detection.get_bbox()
         confidence = detection.get_confidence()
-        if label == "person":
+        if label == "sports ball":
+            start = (int(bbox.xmin() * width), int(bbox.ymin() * height))
+            end = (
+                start[0] + int(bbox.width() * width),
+                start[1] + int(bbox.height() * height),
+            )
+            cv2.rectangle(frame, start, end, (0, 255, 0), 5)
             string_to_print += f"Detection: {label} {confidence:.2f}\n"
             detection_count += 1
+            print(string_to_print)
+
     if user_data.use_frame:
         # Note: using imshow will not work here, as the callback function is not running in the main thread
         # Lets ptint the detection count to the frame
@@ -108,7 +116,6 @@ def app_callback(pad, info, user_data):
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         user_data.set_frame(frame)
 
-    print(string_to_print)
     return Gst.PadProbeReturn.OK
 
 
@@ -160,7 +167,7 @@ class GStreamerDetectionApp(GStreamerApp):
 
     def get_pipeline_string(self):
         if self.source_type == "rpi":
-            source_element = f"libcamerasrc name=src_0 auto-focus-mode=2 ! "
+            source_element = f"libcamerasrc name=src_0 auto-focus-mode=0 ! "
             source_element += (
                 f"video/x-raw, format={self.network_format}, width=1536, height=864 ! "
             )
